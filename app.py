@@ -4,8 +4,8 @@ from supabase import create_client
 
 st.set_page_config(page_title="Eshop Dashboard", layout="wide")
 
-url = st.secrets["https://dlcfmwrfficvvfhygrie.supabase.co"]
-key = st.secrets["sb_publishable_JWOXRpcJuO3QbJJhhXyoLA_f4dpYr-S"]
+url = st.secrets["SUPABASE_URL"]
+key = st.secrets["SUPABASE_KEY"]
 supabase = create_client(url, key)
 
 menu = st.sidebar.radio("Menu", ["Ver pedidos", "Insertar pedido", "Agregar cliente", "Agregar producto", "Reportes"])
