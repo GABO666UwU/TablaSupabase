@@ -4,11 +4,11 @@ from supabase import create_client
 
 st.set_page_config(page_title="Eshop Dashboard", layout="wide")
 
-url = st.secrets["SUPABASE_URL"]
-key = st.secrets["SUPABASE_KEY"]
+url = st.secrets["https://dlcfmwrfficvvfhygrie.supabase.co"]
+key = st.secrets["sb_publishable_JWOXRpcJuO3QbJJhhXyoLA_f4dpYr-S"]
 supabase = create_client(url, key)
 
-menu = st.sidebar.radio("Menu", ["Ver pedidos", "Insertar pedido", "Reportes"])
+menu = st.sidebar.radio("Menu", ["Ver pedidos", "Insertar pedido", "Agregar cliente", "Agregar producto", "Reportes"])
 
 
 def cargar_pedidos():
@@ -97,6 +97,59 @@ elif menu == "Insertar pedido":
                 st.success(f"Pedido {order_id} guardado correctamente")
                 st.session_state.lineas = []
                 st.rerun()
+
+elif menu == "Agregar cliente":
+    st.title("Nuevo cliente")
+
+    with st.form("form_cliente", clear_on_submit=True):
+        nombre = st.text_input("Nombre del cliente")
+        email = st.text_input("Email")
+        direccion = st.text_input("Direccion")
+        enviado = st.form_submit_button("Guardar cliente", type="primary")
+
+        if enviado:
+            if not nombre:
+                st.warning("El nombre del cliente es obligatorio")
+            else:
+                supabase.table("Customer").insert({
+                    "Customer": nombre,
+                    "Email": email,
+                    "Address": direccion,
+                }).execute()
+                st.success(f"Cliente '{nombre}' guardado correctamente")
+
+elif menu == "Agregar producto":
+    st.title("Nuevo producto")
+
+    categorias = supabase.table("Category").select("Id, Title").execute().data
+
+    if not categorias:
+        st.warning("Necesitas tener al menos una categoria creada en Supabase")
+    else:
+        categoria_map = {c["Title"]: c["Id"] for c in categorias}
+
+        with st.form("form_producto", clear_on_submit=True):
+            titulo = st.text_input("Titulo del producto")
+            descripcion = st.text_area("Descripcion")
+            marca = st.text_input("Marca")
+            categoria_sel = st.selectbox("Categoria", list(categoria_map.keys()))
+            precio = st.number_input("Precio unitario", min_value=0.0, step=0.1)
+            moneda = st.text_input("Moneda", value="PEN")
+            enviado = st.form_submit_button("Guardar producto", type="primary")
+
+            if enviado:
+                if not titulo:
+                    st.warning("El titulo del producto es obligatorio")
+                else:
+                    supabase.table("Product").insert({
+                        "Title": titulo,
+                        "Description": descripcion,
+                        "Brand": marca,
+                        "CategoryId": categoria_map[categoria_sel],
+                        "UnitPrice": precio,
+                        "Currency": moneda,
+                    }).execute()
+                    st.success(f"Producto '{titulo}' guardado correctamente")
 
 elif menu == "Reportes":
     st.title("Reportes")
